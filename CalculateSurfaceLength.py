@@ -97,5 +97,4 @@ if __name__ == "__main__":
     inputFC = arcpy.GetParameterAsText(0)
     dem = arcpy.GetParameterAsText(1)
     fieldName = arcpy.GetParameterAsText(2)
-    method = arcpy.GetParameterAsText(2).lower()
     calcSurfaceLength(inputFC, dem, fieldName)
