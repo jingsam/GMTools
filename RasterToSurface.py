@@ -69,7 +69,7 @@ def RasterToSurface(dem, outputFC, fieldName):
     dtype = np.dtype([('X', '<f4'), ('Y', '<f4'), ('{0}'.format(fieldName), '<f4')])
     surfaceArray = np.zeros(((rowCount - 1) * 2, (colCount - 1)), dtype)
 
-    arcpy.SetProgressor("step", "Creating triangled network", 0, (rowCount - 1) * (colCount - 1), 1)
+    arcpy.SetProgressor("step", "Creating triangled network...", 0, (rowCount - 1) * (colCount - 1), 1)
     for row in xrange(0, rowCount - 1):
         for col in xrange(0, colCount - 1):
             pointA = demArray[row, col]
@@ -89,6 +89,7 @@ def RasterToSurface(dem, outputFC, fieldName):
 
             arcpy.SetProgressorPosition()
 
+    arcpy.SetProgressor("Default", "Writing result...")
     arcpy.da.NumPyArrayToFeatureClass(surfaceArray.reshape((rowCount - 1) * (colCount - 1) * 2, ),
                                       outputFC, ["X", "Y"], desc.spatialReference.GCS)
 
