@@ -42,9 +42,10 @@ def CalcSurfaceArea(inputFC, surface, areaField, outputField):
 
     cursor1 = arcpy.da.UpdateCursor(inputFC, [outputField])
     cursor2 = arcpy.da.SearchCursor(result, [outputField])
-    for row in cursor1:
-        row[0] = (cursor2.next()[0] / 1000000.0)
-        cursor1.updateRow(row)
+    for row1 in cursor1:
+        area = cursor2.next()[0]
+        row1[0] = area
+        cursor1.updateRow(row1)
 
     del cursor1, cursor2
 

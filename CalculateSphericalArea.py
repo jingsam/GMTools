@@ -108,7 +108,7 @@ def calcSphericalArea_ArcGIS(inputFC, fieldName):
     if fieldName not in desc.fields:
         arcpy.AddField_management(inputFC, fieldName, "DOUBLE")
 
-    arcpy.CalculateField_management(inputFC, fieldName, "!shape.area@sqaremeters!", "PYTHON_9.3")
+    arcpy.CalculateField_management(inputFC, fieldName, "!shape.area@squarekilometers!", "PYTHON_9.3")
 
 
 if __name__ == "__main__":
