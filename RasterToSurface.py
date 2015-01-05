@@ -44,7 +44,7 @@ def calcTriangleArea(pointA, pointB, pointC):
 
     return ((a[1] * b[2] - a[2] * b[1]) ** 2 +
             (a[2] * b[0] - a[0] * b[2]) ** 2 +
-            (a[0] * b[1] - a[1] * b[0]) ** 2) ** 0.5 * 0.5
+            (a[0] * b[1] - a[1] * b[0]) ** 2) ** 0.5 * 0.5 * 0.000001  # km2
 
 
 def RasterToSurface(dem, outputFC, fieldName):
@@ -64,7 +64,8 @@ def RasterToSurface(dem, outputFC, fieldName):
 
     arcpy.env.outputCoordinateSystem = desc.SpatialReference.GCS
     result = arcpy.RasterToPoint_conversion(dem2, "#", "Value")
-    demArray = arcpy.da.FeatureClassToNumPyArray(result, ("SHAPE@X", "SHAPE@Y", "grid_code")).reshape((rowCount, colCount))
+    demArray = arcpy.da.FeatureClassToNumPyArray(result, ("SHAPE@X", "SHAPE@Y", "grid_code")).reshape(
+        (rowCount, colCount))
 
     dtype = np.dtype([('X', '<f4'), ('Y', '<f4'), ('{0}'.format(fieldName), '<f4')])
     surfaceArray = np.zeros(((rowCount - 1) * 2, (colCount - 1)), dtype)
@@ -84,12 +85,12 @@ def RasterToSurface(dem, outputFC, fieldName):
 
             xADC = (pointA[0] + pointD[0] + pointC[0]) / 3.0
             yADC = (pointA[1] + pointD[1] + pointC[1]) / 3.0
-            sADC = calcTriangleArea(pointA, pointD, pointC)
+            sADC = calcTriangleArea(pointA, pointD, pointC)  # unit: km2
             surfaceArray[row * 2 + 1, col] = (xADC, yADC, sADC)
 
             arcpy.SetProgressorPosition()
 
-    arcpy.SetProgressor("Default", "Writing result...")
+    arcpy.SetProgressor("Default", "Creating result...")
     arcpy.da.NumPyArrayToFeatureClass(surfaceArray.reshape((rowCount - 1) * (colCount - 1) * 2, ),
                                       outputFC, ["X", "Y"], desc.spatialReference.GCS)
 

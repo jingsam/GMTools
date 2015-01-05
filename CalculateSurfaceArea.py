@@ -43,8 +43,11 @@ def CalcSurfaceArea(inputFC, surface, areaField, outputField):
     cursor1 = arcpy.da.UpdateCursor(inputFC, [outputField])
     cursor2 = arcpy.da.SearchCursor(result, [outputField])
     for row1 in cursor1:
-        area = cursor2.next()[0]
-        row1[0] = area
+        row2 = cursor2.next()
+        if row2[0] is None:
+            row1[0] = 0.0
+        else:
+            row1[0] = row2[0]
         cursor1.updateRow(row1)
 
     del cursor1, cursor2
