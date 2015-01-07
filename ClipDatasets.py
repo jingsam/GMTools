@@ -29,8 +29,7 @@ def ClipDataset(dataset, clipFC, outGDB):
 def ClipDatasets(inputDatasets, inputFC, idField, year, outputDir):
     ids = [row[0] for row in arcpy.da.SearchCursor(inputFC, [idField])]
     uids = set(ids)
-    arcpy.SetProgressor("step", "Cliping datasets...", 0, len(uids), 1)
-    for uid in uids:
+    for i, uid in enumerate(uids):
         out_path = arcpy.env.scratchWorkspace
         out_name = "TempUnit"
         where_clause = " \"{0}\" = '{1}' ".format(idField, uid)
@@ -40,8 +39,7 @@ def ClipDatasets(inputDatasets, inputFC, idField, year, outputDir):
         for dataset in inputDatasets:
             ClipDataset(dataset, clipFC, outGDB)
 
-        arcpy.DeleteFeatures_management(clipFC)
-        arcpy.SetProgressorPosition()
+        arcpy.AddMessage(outGDB + " ({0}/{1})".format(i + 1, len(uids)))
 
 
 if __name__ == "__main__":
