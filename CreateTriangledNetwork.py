@@ -8,7 +8,7 @@ def CreateTriangledNetwork(inputWorkspaces, outputName):
     for workspace in inputWorkspaces:
         arcpy.env.workspace = workspace
         dem = arcpy.ListRasters("DEM")[0]
-        RasterToSurface(dem, , )
+        RasterToSurface()
 
 
 

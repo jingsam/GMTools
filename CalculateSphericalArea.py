@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 __author__ = 'jingsam@163.com'
 
-import os
 from math import sin
 from math import cos
 from math import pi
+
 import arcpy
 
 
 b2, A, B, C, D, E = [0.0] * 6
 
 
-def initParams(spatialReference):
+def InitParams(spatialReference):
     a = spatialReference.GCS.semiMajorAxis
     b = spatialReference.GCS.semiMinorAxis
     e2 = (a * a - b * b) / (a * a)
@@ -28,7 +28,7 @@ def initParams(spatialReference):
     E = (5.0 / 2304) * e8
 
 
-def calcTrapezoidArea(B1, L1, B2, L2):
+def CalcTrapezoidArea(B1, L1, B2, L2):
     if B2 == B1:
         return 0.0
 
@@ -51,25 +51,25 @@ def calcTrapezoidArea(B1, L1, B2, L2):
     return -S
 
 
-def calcPartArea(part):
+def CalcPartArea(part):
     area = 0.0
     for i in range(0, part.count - 1):
         point1 = part[i]
         point2 = part[i + 1]
         if point1 and point2:
-            area += calcTrapezoidArea(point1.Y, point1.X, point2.Y, point2.X)
+            area += CalcTrapezoidArea(point1.Y, point1.X, point2.Y, point2.X)
     return area
 
 
-def calcPolygonArea(polygon):
+def CalcPolygonArea(polygon):
     area = 0.0
     for part in polygon:
-        area += calcPartArea(part)
+        area += CalcPartArea(part)
 
     return area
 
 
-def calcSphericalArea_GDPJ(inputFC, fieldName):
+def CalcSphericalArea_GDPJ(inputFC, fieldName):
     if not arcpy.Exists(inputFC):
         arcpy.AddIDMessage("ERROR", 110, inputFC)
         raise SystemExit()
@@ -83,19 +83,19 @@ def calcSphericalArea_GDPJ(inputFC, fieldName):
         arcpy.AddIDMessage("ERROR", 1024)
         raise SystemExit()
 
-    initParams(desc.spatialReference)
+    InitParams(desc.spatialReference)
 
     if fieldName not in desc.fields:
         arcpy.AddField_management(inputFC, fieldName, "DOUBLE")
 
     cursor = arcpy.da.UpdateCursor(inputFC, ["SHAPE@", fieldName], spatial_reference=desc.spatialReference.GCS)
     for row in cursor:
-        row[1] = calcPolygonArea(row[0]) / 1000000.0    # unit: km2
+        row[1] = CalcPolygonArea(row[0]) / 1000000.0    # unit: km2
         cursor.updateRow(row)
     del cursor
 
 
-def calcSphericalArea_ArcGIS(inputFC, fieldName):
+def CalcSphericalArea_ArcGIS(inputFC, fieldName):
     if not arcpy.Exists(inputFC):
         arcpy.AddIDMessage("ERROR", 110, inputFC)
         raise SystemExit()
@@ -116,6 +116,6 @@ if __name__ == "__main__":
     fieldName = arcpy.GetParameterAsText(1)
     method = arcpy.GetParameterAsText(2).lower()
     if method == "gdpj":
-        calcSphericalArea_GDPJ(inputFC, fieldName)
+        CalcSphericalArea_GDPJ(inputFC, fieldName)
     else:
-        calcSphericalArea_ArcGIS(inputFC, fieldName)
+        CalcSphericalArea_ArcGIS(inputFC, fieldName)

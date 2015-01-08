@@ -12,7 +12,7 @@ from arcpy.sa import *
 a, e2 = [0.0] * 2
 
 
-def initParams(spatialReference):
+def InitParams(spatialReference):
     global a, e2
     a = spatialReference.GCS.semiMajorAxis
     b = spatialReference.GCS.semiMinorAxis
@@ -31,7 +31,7 @@ def BLH2XYZ(B, L, H):
     return X, Y, Z
 
 
-def calcTriangleArea(pointA, pointB, pointC):
+def CalcTriangleArea(pointA, pointB, pointC):
     if -9999.0 in (pointA[2], pointB[2], pointC[2]):
         return 0.0
 
@@ -57,7 +57,7 @@ def RasterToSurface(dem, outputFC, fieldName):
         arcpy.AddIDMessage("ERROR", 1024)
         raise SystemExit()
 
-    initParams(desc.spatialReference)
+    InitParams(desc.spatialReference)
     rowCount, colCount, nodata = desc.height, desc.width, desc.noDataValue
 
     dem2 = Con(IsNull(dem), -9999.0, dem)
@@ -80,12 +80,12 @@ def RasterToSurface(dem, outputFC, fieldName):
 
             xABC = (pointA[0] + pointB[0] + pointC[0]) / 3.0
             yABC = (pointA[1] + pointB[1] + pointC[1]) / 3.0
-            sABC = calcTriangleArea(pointA, pointB, pointC)
+            sABC = CalcTriangleArea(pointA, pointB, pointC)
             surfaceArray[row * 2, col] = (xABC, yABC, sABC)
 
             xADC = (pointA[0] + pointD[0] + pointC[0]) / 3.0
             yADC = (pointA[1] + pointD[1] + pointC[1]) / 3.0
-            sADC = calcTriangleArea(pointA, pointD, pointC)  # unit: km2
+            sADC = CalcTriangleArea(pointA, pointD, pointC)  # unit: km2
             surfaceArray[row * 2 + 1, col] = (xADC, yADC, sADC)
 
             arcpy.SetProgressorPosition()

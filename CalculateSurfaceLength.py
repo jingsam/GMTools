@@ -10,7 +10,7 @@ import arcpy
 a, e2 = [0.0] * 2
 
 
-def initParams(spatialReference):
+def InitParams(spatialReference):
     global a, e2
     a = spatialReference.GCS.semiMajorAxis
     b = spatialReference.GCS.semiMinorAxis
@@ -29,41 +29,41 @@ def BLH2XYZ(B, L, H):
     return X, Y, Z
 
 
-def calcLineLength(B1, L1, H1, B2, L2, H2):
+def CalcLineLength(B1, L1, H1, B2, L2, H2):
     X1, Y1, Z1 = BLH2XYZ(B1, L1, H1)
     X2, Y2, Z2 = BLH2XYZ(B2, L2, H2)
 
     return ((X1 - X2)**2 + (Y1 - Y2)**2 + (Z1 - Z2)**2) ** 0.5
 
 
-def getHeight(point, dem):
+def GetHeight(point, dem):
     result = arcpy.GetCellValue_management(dem, point, "1")
     height = float(result.getOutput(0))
 
     return height
 
 
-def calcPartLength(part, dem):
+def CalcPartLength(part, dem):
     length = 0.0
     for i in range(0, part.count - 1):
         point1 = part[i]
         point2 = part[i + 1]
         if point1 and point2:
-            H1 = getHeight(point1, dem)
-            H2 = getHeight(point2, dem)
-            length += calcLineLength(point1.Y, point1.X, H1, point2.Y, point2.X, H2)
+            H1 = GetHeight(point1, dem)
+            H2 = GetHeight(point2, dem)
+            length += CalcLineLength(point1.Y, point1.X, H1, point2.Y, point2.X, H2)
     return length
 
 
-def calcShapeLength(shape, dem):
+def CalcShapeLength(shape, dem):
     length = 0.0
     for part in shape:
-        length += calcPartLength(part, dem)
+        length += CalcPartLength(part, dem)
 
     return length
 
 
-def calcSurfaceLength(inputFC, dem, fieldName):
+def CalcSurfaceLength(inputFC, dem, fieldName):
     if not arcpy.Exists(inputFC):
         arcpy.AddIDMessage("ERROR", 110, inputFC)
         raise SystemExit()
@@ -81,14 +81,14 @@ def calcSurfaceLength(inputFC, dem, fieldName):
         arcpy.AddIDMessage("ERROR", 1024)
         raise SystemExit()
 
-    initParams(desc.spatialReference)
+    InitParams(desc.spatialReference)
 
     if fieldName not in desc.fields:
         arcpy.AddField_management(inputFC, fieldName, "DOUBLE")
 
     cursor = arcpy.da.UpdateCursor(inputFC, ["SHAPE@", fieldName], spatial_reference=desc.spatialReference.GCS)
     for row in cursor:
-        row[1] = calcShapeLength(row[0], dem) / 1000.0   # unit: km
+        row[1] = CalcShapeLength(row[0], dem) / 1000.0   # unit: km
         cursor.updateRow(row)
     del cursor
 
@@ -97,4 +97,4 @@ if __name__ == "__main__":
     inputFC = arcpy.GetParameterAsText(0)
     dem = arcpy.GetParameterAsText(1)
     fieldName = arcpy.GetParameterAsText(2)
-    calcSurfaceLength(inputFC, dem, fieldName)
+    CalcSurfaceLength(inputFC, dem, fieldName)

@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 __author__ = 'jingsam@163.com'
 
-import os
 import arcpy
 
 
-def calcSphericalLength_ArcGIS(inputFC, fieldName):
+def CalcSphericalLength(inputFC, fieldName):
     if not arcpy.Exists(inputFC):
         arcpy.AddIDMessage("ERROR", 110, inputFC)
         raise SystemExit()
@@ -24,8 +23,5 @@ def calcSphericalLength_ArcGIS(inputFC, fieldName):
 if __name__ == "__main__":
     inputFC = arcpy.GetParameterAsText(0)
     fieldName = arcpy.GetParameterAsText(1)
-    method = arcpy.GetParameterAsText(2).lower()
-    if method == "gdpj":
-        calcSphericalLength_ArcGIS(inputFC, fieldName)
-    else:
-        calcSphericalLength_ArcGIS(inputFC, fieldName)
+
+    CalcSphericalLength(inputFC, fieldName)
