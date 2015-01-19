@@ -4,6 +4,7 @@ __author__ = 'jingsam@163.com'
 import multiprocessing
 import arcpy
 
+
 def CreateGDB(outputDir, uid, year):
     out_name = "{0}_{1}.gdb".format(uid, year)
     out_GDB = outputDir + "\\" + out_name
@@ -44,9 +45,6 @@ def ClipDatasets(inputDatasets, inputFC, idField, year, outputDir):
 
         arcpy.Delete_management(clipFC)
         arcpy.AddMessage(outGDB + " ({0}/{1})".format(i + 1, len(uids)))
-
-
-def MulClip():
 
 
 if __name__ == "__main__":
