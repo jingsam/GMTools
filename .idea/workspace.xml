@@ -30,8 +30,8 @@
       <file leaf-file-name="ClipDatasets.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ClipDatasets.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.17991632" vertical-offset="123" max-vertical-offset="1365">
-              <caret line="13" column="0" selection-start-line="13" selection-start-column="0" selection-end-line="13" selection-end-column="0" />
+            <state vertical-scroll-proportion="0.09205021" vertical-offset="123" max-vertical-offset="1365">
+              <caret line="10" column="0" selection-start-line="10" selection-start-column="0" selection-end-line="10" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -908,8 +908,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/ClipDatasets.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.17991632" vertical-offset="123" max-vertical-offset="1365">
-          <caret line="13" column="0" selection-start-line="13" selection-start-column="0" selection-end-line="13" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.09205021" vertical-offset="123" max-vertical-offset="1365">
+          <caret line="10" column="0" selection-start-line="10" selection-start-column="0" selection-end-line="10" selection-end-column="0" />
           <folding />
         </state>
       </provider>
