@@ -5,57 +5,58 @@ import multiprocessing
 import arcpy
 
 
-def CreateGDB(outputDir, uid, year):
-    out_name = "{0}_{1}.gdb".format(uid, year)
-    out_GDB = outputDir + "\\" + out_name
-
-    if not arcpy.Exists(out_GDB):
-        arcpy.CreateFileGDB_management(outputDir, out_name)
-
-    return out_GDB
-
-
-def ClipDataset(dataset, clipFC, outGDB):
+def ClipDataset(dataset, clip_fc, out_dir):
     desc = arcpy.Describe(dataset)
-    outName = outGDB + "\\" + desc.baseName
+    outName = out_dir + "\\" + desc.baseName
 
     if desc.DatasetType == "FeatureClass":
-        arcpy.Clip_analysis(dataset, clipFC, outName)
+        arcpy.Clip_analysis(dataset, clip_fc, outName)
     elif desc.DatasetType == "RasterDataset":
-        outRaster = arcpy.sa.ExtractByMask(dataset, clipFC)
+        outRaster = arcpy.sa.ExtractByMask(dataset, clip_fc)
         outRaster.save(outName)
 
 
-def ClipDatasets(inputDatasets, inputFC, idField, year, outputDir):
-    arcpy.env.overwriteOutput = True
+def CreateGDB(uid, year, out_dir):
+    out_name = "{0}_{1}.gdb".format(uid, year)
+    out_gdb = arcpy.CreateFileGDB_management(out_dir, out_name)
 
-    ids = [row[0] for row in arcpy.da.SearchCursor(inputFC, [idField])]
-    uids = set(ids)
-    for i, uid in enumerate(uids):
-
-        out_path = arcpy.env.scratchFolder
-        out_name = "U" + uid + "_" + year
-        where_clause = " \"{0}\" = '{1}' ".format(idField, uid)
-        clipFC = arcpy.FeatureClassToFeatureClass_conversion(inputFC, out_path, out_name, where_clause)
-
-        outGDB = CreateGDB(outputDir, uid, year)
-
-        for dataset in inputDatasets:
-            ClipDataset(dataset, clipFC, outGDB)
-
-        arcpy.Delete_management(clipFC)
-        arcpy.AddMessage(outGDB + " ({0}/{1})".format(i + 1, len(uids)))
+    return out_gdb
 
 
-if __name__ == "__main__":
-    inputDatasets = arcpy.GetParameterAsText(0).split(";")
-    inputFC = arcpy.GetParameterAsText(1)
-    idField = arcpy.GetParameterAsText(2)
-    year = arcpy.GetParameterAsText(3)
-    outputDir = arcpy.GetParameterAsText(4)
+def StartTask(in_datasets, in_fc, field, uid, year, out_dir):
+    # prepare clip featureclass
+    where_clause = " \"{0}\" = '{1}' ".format(field, uid)
+    clip_fc = arcpy.FeatureClassToFeatureClass_conversion(in_fc, out_dir, uid, where_clause)
 
+    # prepare out gdb
+    out_gdb = CreateGDB(uid, year, out_dir)
+
+    # clip datasets
+    for dataset in in_datasets:
+        ClipDataset(dataset, clip_fc, out_gdb)
+
+    # clean clip featureclass
+    arcpy.Delete_management(clip_fc)
+
+
+def ClipDatasets(in_datasets, in_fc, field, year, out_dir):
+    multiprocessing.freeze_support()
     pool = multiprocessing.Pool()
+
+    ids = [row[0] for row in arcpy.da.SearchCursor(in_fc, [field])]
+    uids = set(ids)
+    for uid in uids:
+        pool.apply_async(StartTask, (in_datasets, in_fc, field, uid, year, out_dir))
+
     pool.close()
     pool.join()
 
-    ClipDatasets(inputDatasets, inputFC, idField, year, outputDir)
+
+if __name__ == "__main__":
+    in_datasets = arcpy.GetParameterAsText(0).split(";")
+    in_fc = arcpy.GetParameterAsText(1)
+    field = arcpy.GetParameterAsText(2)
+    year = arcpy.GetParameterAsText(3)
+    out_dir = arcpy.GetParameterAsText(4)
+
+    ClipDatasets(in_datasets, in_fc, field, year, out_dir)

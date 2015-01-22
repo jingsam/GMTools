@@ -4,6 +4,13 @@ __author__ = 'jingsam@163.com'
 import arcpy
 
 
+def BatchCalcSphericalLength(gdb):
+    arcpy.env.workspace = gdb
+    fcs = arcpy.ListFeatureClasses(feature_type="polygon") + arcpy.ListFeatureClasses(feature_type="polyline")
+    for fc in fcs:
+        CalcSphericalLength(fc, "L10")
+
+
 def CalcSphericalLength(inputFC, fieldName):
     if not arcpy.Exists(inputFC):
         arcpy.AddIDMessage("ERROR", 110, inputFC)
