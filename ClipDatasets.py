@@ -6,6 +6,7 @@ import arcpy
 
 
 def ClipDataset(dataset, clip_fc, out_dir):
+    arcpy.env.scratchWorkspace = out_dir
     desc = arcpy.Describe(dataset)
     outName = out_dir + "\\" + desc.baseName
 
@@ -16,20 +17,19 @@ def ClipDataset(dataset, clip_fc, out_dir):
         outRaster.save(outName)
 
 
-def CreateGDB(uid, year, out_dir):
-    out_name = "{0}_{1}.gdb".format(uid, year)
-    out_gdb = arcpy.CreateFileGDB_management(out_dir, out_name)
-
-    return out_gdb
-
-
 def StartTask(in_datasets, in_fc, field, uid, year, out_dir):
+    arcpy.env.overwriteOutput = True
+
     # prepare clip featureclass
-    where_clause = " \"{0}\" = '{1}' ".format(field, uid)
-    clip_fc = arcpy.FeatureClassToFeatureClass_conversion(in_fc, out_dir, uid, where_clause)
+    where_clause = "\"{0}\"='{1}'".format(field, uid)
+    arcpy.FeatureClassToFeatureClass_conversion(in_fc, out_dir, uid, where_clause)
+    clip_fc = "{0}\\{1}.shp".format(out_dir, uid)
 
     # prepare out gdb
-    out_gdb = CreateGDB(uid, year, out_dir)
+    gdb_name = "{0}_{1}.gdb".format(uid, year)
+    out_gdb = "{0}\\{1}".format(out_dir, gdb_name)
+    if not arcpy.Exists(out_gdb):
+        arcpy.CreateFileGDB_management(out_dir, gdb_name)
 
     # clip datasets
     for dataset in in_datasets:
@@ -47,6 +47,7 @@ def ClipDatasets(in_datasets, in_fc, field, year, out_dir):
     uids = set(ids)
     for uid in uids:
         pool.apply_async(StartTask, (in_datasets, in_fc, field, uid, year, out_dir))
+        #StartTask(in_datasets, in_fc, field, uid, year, out_dir)
 
     pool.close()
     pool.join()
