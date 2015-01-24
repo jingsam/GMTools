@@ -13,8 +13,8 @@ def ClipDataset(dataset, clip_fc, out_dir):
     if desc.DatasetType == "FeatureClass":
         arcpy.Clip_analysis(dataset, clip_fc, outName)
     elif desc.DatasetType == "RasterDataset":
-        outRaster = arcpy.sa.ExtractByMask(dataset, clip_fc)
-        outRaster.save(outName)
+        extent = arcpy.Describe(clip_fc).extent
+        arcpy.Clip_management(dataset, "#", outName, clip_fc, "#", "ClippingGeometry")
 
 
 def StartTask(in_datasets, in_fc, field, uid, year, out_dir):

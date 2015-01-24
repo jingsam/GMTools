@@ -4,31 +4,30 @@ __author__ = 'jingsam@163.com'
 import arcpy
 
 
+def CalcSphericalLength(in_fc, field):
+    if not arcpy.Exists(in_fc):
+        arcpy.AddIDMessage("ERROR", 110, in_fc)
+        raise SystemExit()
+
+    desc = arcpy.Describe(in_fc)
+    if desc.shapeType.lower() not in ("polygon", "polyline"):
+        arcpy.AddIDMessage("ERROR", 931)
+        raise SystemExit()
+
+    if field not in desc.fields:
+        arcpy.AddField_management(in_fc, field, "DOUBLE")
+
+    arcpy.CalculateField_management(in_fc, field, "!shape.length@kilometers!", "PYTHON_9.3")
+
+
 def BatchCalcSphericalLength(gdb):
     arcpy.env.workspace = gdb
     fcs = arcpy.ListFeatureClasses(feature_type="polygon") + arcpy.ListFeatureClasses(feature_type="polyline")
     for fc in fcs:
         CalcSphericalLength(fc, "L10")
 
-
-def CalcSphericalLength(inputFC, fieldName):
-    if not arcpy.Exists(inputFC):
-        arcpy.AddIDMessage("ERROR", 110, inputFC)
-        raise SystemExit()
-
-    desc = arcpy.Describe(inputFC)
-    if desc.shapeType.lower() not in ("polygon", "polyline"):
-        arcpy.AddIDMessage("ERROR", 931)
-        raise SystemExit()
-
-    if fieldName not in desc.fields:
-        arcpy.AddField_management(inputFC, fieldName, "DOUBLE")
-
-    arcpy.CalculateField_management(inputFC, fieldName, "!shape.length@kilometers!", "PYTHON_9.3")
-
-
 if __name__ == "__main__":
-    inputFC = arcpy.GetParameterAsText(0)
-    fieldName = arcpy.GetParameterAsText(1)
+    inpu_fc = arcpy.GetParameterAsText(0)
+    field = arcpy.GetParameterAsText(1)
 
-    CalcSphericalLength(inputFC, fieldName)
+    CalcSphericalLength(inpu_fc, field)

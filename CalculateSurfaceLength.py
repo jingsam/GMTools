@@ -37,10 +37,10 @@ def CalcLineLength(B1, L1, H1, B2, L2, H2):
 
 
 def GetHeight(point, dem):
-    result = arcpy.GetCellValue_management(dem, point, "1")
-    height = float(result.getOutput(0))
+    result = arcpy.GetCellValue_management(dem, str(point))
+    valuestr = result.getOutput(0)
 
-    return height
+    return float(valuestr) if valuestr != "NoData" else 0.0
 
 
 def CalcPartLength(part, dem):
@@ -63,16 +63,16 @@ def CalcShapeLength(shape, dem):
     return length
 
 
-def CalcSurfaceLength(inputFC, dem, fieldName):
-    if not arcpy.Exists(inputFC):
-        arcpy.AddIDMessage("ERROR", 110, inputFC)
+def CalcSurfaceLength(in_fc, dem, field):
+    if not arcpy.Exists(in_fc):
+        arcpy.AddIDMessage("ERROR", 110, in_fc)
         raise SystemExit()
 
     if not arcpy.Exists(dem):
-        arcpy.AddIDMessage("ERROR", 110, inputFC)
+        arcpy.AddIDMessage("ERROR", 110, in_fc)
         raise SystemExit()
 
-    desc = arcpy.Describe(inputFC)
+    desc = arcpy.Describe(in_fc)
     if desc.shapeType.lower() not in ("polygon", "polyline"):
         arcpy.AddIDMessage("ERROR", 931)
         raise SystemExit()
@@ -83,18 +83,25 @@ def CalcSurfaceLength(inputFC, dem, fieldName):
 
     InitParams(desc.spatialReference)
 
-    if fieldName not in desc.fields:
-        arcpy.AddField_management(inputFC, fieldName, "DOUBLE")
+    if field not in desc.fields:
+        arcpy.AddField_management(in_fc, field, "DOUBLE")
 
-    cursor = arcpy.da.UpdateCursor(inputFC, ["SHAPE@", fieldName], spatial_reference=desc.spatialReference.GCS)
+    cursor = arcpy.da.UpdateCursor(in_fc, ["SHAPE@", field], spatial_reference=desc.spatialReference.GCS)
     for row in cursor:
         row[1] = CalcShapeLength(row[0], dem) / 1000.0   # unit: km
         cursor.updateRow(row)
     del cursor
 
 
+def BatchCalcSurfaceLength(gdb):
+    arcpy.env.workspace = gdb
+    fcs = arcpy.ListFeatureClasses(feature_type="polygon") + arcpy.ListFeatureClasses(feature_type="polyline")
+    for fc in fcs:
+        CalcSurfaceLength(fc, "DEM", "L20")
+
+
 if __name__ == "__main__":
-    inputFC = arcpy.GetParameterAsText(0)
+    in_fc = arcpy.GetParameterAsText(0)
     dem = arcpy.GetParameterAsText(1)
-    fieldName = arcpy.GetParameterAsText(2)
-    CalcSurfaceLength(inputFC, dem, fieldName)
+    field = arcpy.GetParameterAsText(2)
+    CalcSurfaceLength(in_fc, dem, field)

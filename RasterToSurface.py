@@ -47,7 +47,7 @@ def CalcTriangleArea(pointA, pointB, pointC):
             (a[0] * b[1] - a[1] * b[0]) ** 2) ** 0.5 * 0.5 * 0.000001  # km2
 
 
-def RasterToSurface(dem, outputFC, fieldName):
+def RasterToSurface(dem, out_fc, field):
     if not arcpy.Exists(dem):
         arcpy.AddIDMessage("ERROR", 110, dem)
         raise SystemExit()
@@ -67,10 +67,9 @@ def RasterToSurface(dem, outputFC, fieldName):
     demArray = arcpy.da.FeatureClassToNumPyArray(result, ("SHAPE@X", "SHAPE@Y", "grid_code")).reshape(
         (rowCount, colCount))
 
-    dtype = np.dtype([('X', '<f4'), ('Y', '<f4'), ('{0}'.format(fieldName), '<f4')])
+    dtype = np.dtype([('X', '<f4'), ('Y', '<f4'), ('{0}'.format(field), '<f4')])
     surfaceArray = np.zeros(((rowCount - 1) * 2, (colCount - 1)), dtype)
 
-    arcpy.SetProgressor("step", "Creating triangled network...", 0, (rowCount - 1) * (colCount - 1), 1)
     for row in xrange(0, rowCount - 1):
         for col in xrange(0, colCount - 1):
             pointA = demArray[row, col]
@@ -88,16 +87,18 @@ def RasterToSurface(dem, outputFC, fieldName):
             sADC = CalcTriangleArea(pointA, pointD, pointC)  # unit: km2
             surfaceArray[row * 2 + 1, col] = (xADC, yADC, sADC)
 
-            arcpy.SetProgressorPosition()
-
-    arcpy.SetProgressor("Default", "Creating result...")
     arcpy.da.NumPyArrayToFeatureClass(surfaceArray.reshape((rowCount - 1) * (colCount - 1) * 2, ),
-                                      outputFC, ["X", "Y"], desc.spatialReference.GCS)
+                                      out_fc, ["X", "Y"], desc.spatialReference.GCS)
+
+
+def BatchRasterToSurface(gdb):
+    arcpy.env.workspace = gdb
+    RasterToSurface("DEM", "SURFACE", "A20")
 
 
 if __name__ == "__main__":
     dem = arcpy.GetParameterAsText(0)
-    outputFC = arcpy.GetParameterAsText(1)
-    fieldName = arcpy.GetParameterAsText(2)
+    out_fc = arcpy.GetParameterAsText(1)
+    field = arcpy.GetParameterAsText(2)
 
-    RasterToSurface(dem, outputFC, fieldName)
+    RasterToSurface(dem, out_fc, field)

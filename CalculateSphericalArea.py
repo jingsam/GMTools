@@ -4,7 +4,6 @@ __author__ = 'jingsam@163.com'
 from math import sin
 from math import cos
 from math import pi
-
 import arcpy
 
 
@@ -69,12 +68,12 @@ def CalcPolygonArea(polygon):
     return area
 
 
-def CalcSphericalArea_GDPJ(inputFC, fieldName):
-    if not arcpy.Exists(inputFC):
-        arcpy.AddIDMessage("ERROR", 110, inputFC)
+def CalcSphericalArea_GDPJ(in_fc, field):
+    if not arcpy.Exists(in_fc):
+        arcpy.AddIDMessage("ERROR", 110, in_fc)
         raise SystemExit()
 
-    desc = arcpy.Describe(inputFC)
+    desc = arcpy.Describe(in_fc)
     if desc.shapeType.lower() != "polygon":
         arcpy.AddIDMessage("ERROR", 931)
         raise SystemExit()
@@ -85,37 +84,49 @@ def CalcSphericalArea_GDPJ(inputFC, fieldName):
 
     InitParams(desc.spatialReference)
 
-    if fieldName not in desc.fields:
-        arcpy.AddField_management(inputFC, fieldName, "DOUBLE")
+    if field not in desc.fields:
+        arcpy.AddField_management(in_fc, field, "DOUBLE")
 
-    cursor = arcpy.da.UpdateCursor(inputFC, ["SHAPE@", fieldName], spatial_reference=desc.spatialReference.GCS)
+    cursor = arcpy.da.UpdateCursor(in_fc, ["SHAPE@", field], spatial_reference=desc.spatialReference.GCS)
     for row in cursor:
         row[1] = CalcPolygonArea(row[0]) / 1000000.0    # unit: km2
         cursor.updateRow(row)
     del cursor
 
 
-def CalcSphericalArea_ArcGIS(inputFC, fieldName):
-    if not arcpy.Exists(inputFC):
-        arcpy.AddIDMessage("ERROR", 110, inputFC)
+def CalcSphericalArea_ArcGIS(in_fc, field):
+    if not arcpy.Exists(in_fc):
+        arcpy.AddIDMessage("ERROR", 110, in_fc)
         raise SystemExit()
 
-    desc = arcpy.Describe(inputFC)
+    desc = arcpy.Describe(in_fc)
     if desc.shapeType.lower() not in ("polygon", "polyline"):
         arcpy.AddIDMessage("ERROR", 931)
         raise SystemExit()
 
-    if fieldName not in desc.fields:
-        arcpy.AddField_management(inputFC, fieldName, "DOUBLE")
+    if field not in desc.fields:
+        arcpy.AddField_management(in_fc, field, "DOUBLE")
 
-    arcpy.CalculateField_management(inputFC, fieldName, "!shape.area@squarekilometers!", "PYTHON_9.3")
+    arcpy.CalculateField_management(in_fc, field, "!shape.area@squarekilometers!", "PYTHON_9.3")
+
+
+def CalcSphericalArea(in_fc, field, method):
+    if method.lower() == "gdpj":
+        CalcSphericalArea_GDPJ(in_fc, field)
+    else:
+        CalcSphericalArea_ArcGIS(in_fc, field)
+
+
+def BatchCalcSphericalArea(gdb):
+    arcpy.env.workspace = gdb
+    fcs = arcpy.ListFeatureClasses(feature_type="polygon") + arcpy.ListFeatureClasses(feature_type="polyline")
+    for fc in fcs:
+        CalcSphericalArea(fc, "A10", "arcgis")
 
 
 if __name__ == "__main__":
-    inputFC = arcpy.GetParameterAsText(0)
-    fieldName = arcpy.GetParameterAsText(1)
-    method = arcpy.GetParameterAsText(2).lower()
-    if method == "gdpj":
-        CalcSphericalArea_GDPJ(inputFC, fieldName)
-    else:
-        CalcSphericalArea_ArcGIS(inputFC, fieldName)
+    in_fc = arcpy.GetParameterAsText(0)
+    field = arcpy.GetParameterAsText(1)
+    method = arcpy.GetParameterAsText(2)
+
+    CalcSphericalArea(in_fc, field, method)
