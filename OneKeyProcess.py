@@ -5,17 +5,17 @@ import multiprocessing
 import arcpy
 from CalculateSphericalArea import BatchCalcSphericalArea
 from CalculateSphericalLength import BatchCalcSphericalLength
-from CalculateSurfaceArea import BatchCalcSurfaceArea
 from RasterToSurface import BatchRasterToSurface
+from CalculateSurfaceArea import BatchCalcSurfaceArea
 from CalculateSurfaceLength import BatchCalcSurfaceLength
 
 
 def StartTask(gdb):
     BatchCalcSphericalArea(gdb)
     BatchCalcSphericalLength(gdb)
-    BatchCalcSurfaceArea(gdb)
     BatchRasterToSurface(gdb)
-    BatchCalcSurfaceLength(gdb)
+    #BatchCalcSurfaceArea(gdb)
+    #BatchCalcSurfaceLength(gdb)
 
 
 def OneKeyProcess(in_gdbs):
@@ -23,7 +23,7 @@ def OneKeyProcess(in_gdbs):
     pool = multiprocessing.Pool()
 
     for gdb in in_gdbs:
-        pool.apply_async(StartTask, gdb)
+        pool.apply_async(StartTask, (gdb, ))
 
     pool.close()
     pool.join()
