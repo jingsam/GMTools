@@ -55,7 +55,7 @@ def CalcSurfaceArea(in_fc, surface, area_field, out_field):
 
 def BatchCalcSurfaceArea(gdb):
     arcpy.env.workspace = gdb
-    fcs = arcpy.ListFeatureClasses(feature_type="polygon") + arcpy.ListFeatureClasses(feature_type="polyline")
+    fcs = arcpy.ListFeatureClasses(feature_type="polygon")
     for fc in fcs:
         CalcSurfaceArea(fc, "SURFACE", "A20", "A20")
 

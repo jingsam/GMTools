@@ -11,22 +11,23 @@ from CalculateSurfaceLength import BatchCalcSurfaceLength
 
 
 def StartTask(gdb):
-    BatchCalcSphericalArea(gdb)
-    BatchCalcSphericalLength(gdb)
+    #BatchCalcSphericalArea(gdb)
+    #BatchCalcSphericalLength(gdb)
     BatchRasterToSurface(gdb)
     #BatchCalcSurfaceArea(gdb)
     #BatchCalcSurfaceLength(gdb)
 
 
 def OneKeyProcess(in_gdbs):
-    multiprocessing.freeze_support()
-    pool = multiprocessing.Pool()
+    #multiprocessing.freeze_support()
+    #pool = multiprocessing.Pool()
 
     for gdb in in_gdbs:
-        pool.apply_async(StartTask, (gdb, ))
+        #pool.apply_async(StartTask, (gdb, ))
+        StartTask(gdb)
 
-    pool.close()
-    pool.join()
+    #pool.close()
+    #pool.join()
 
 
 if __name__ == "__main__":

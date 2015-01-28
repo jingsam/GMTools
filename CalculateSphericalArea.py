@@ -119,7 +119,7 @@ def CalcSphericalArea(in_fc, field, method):
 
 def BatchCalcSphericalArea(gdb):
     arcpy.env.workspace = gdb
-    fcs = arcpy.ListFeatureClasses(feature_type="polygon") + arcpy.ListFeatureClasses(feature_type="polyline")
+    fcs = arcpy.ListFeatureClasses(feature_type="polygon")
     for fc in fcs:
         CalcSphericalArea(fc, "A10", "arcgis")
 

@@ -6,7 +6,6 @@ import arcpy
 
 
 def ClipDataset(dataset, clip_fc, out_dir):
-    arcpy.env.scratchWorkspace = out_dir
     desc = arcpy.Describe(dataset)
     outName = out_dir + "\\" + desc.baseName
 
@@ -14,7 +13,8 @@ def ClipDataset(dataset, clip_fc, out_dir):
         arcpy.Clip_analysis(dataset, clip_fc, outName)
     elif desc.DatasetType == "RasterDataset":
         extent = arcpy.Describe(clip_fc).extent
-        arcpy.Clip_management(dataset, "#", outName, clip_fc, "#", "ClippingGeometry")
+        arcpy.Clip_management(dataset, str(extent), outName)
+        #arcpy.Clip_management(dataset, "#", outName, clip_fc, "#", "ClippingGeometry")
 
 
 def StartTask(in_datasets, in_fc, field, uid, year, out_dir):

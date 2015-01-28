@@ -5,6 +5,7 @@ from math import sin
 from math import cos
 from math import pi
 import numpy as np
+import os
 import arcpy
 from arcpy.sa import *
 
@@ -58,14 +59,15 @@ def RasterToSurface(dem, out_fc, field):
         raise SystemExit()
 
     InitParams(desc.spatialReference)
-    rowCount, colCount, nodata = desc.height, desc.width, desc.noDataValue
+    rowCount, colCount = desc.height, desc.width
 
-    dem2 = Con(IsNull(dem), -9999.0, dem)
+    #dem2 = Con(IsNull(dem), -9999.0, dem)
 
     arcpy.env.outputCoordinateSystem = desc.SpatialReference.GCS
-    result = arcpy.RasterToPoint_conversion(dem2, "#", "Value")
+    result = arcpy.RasterToPoint_conversion(dem, "#", "Value")
     demArray = arcpy.da.FeatureClassToNumPyArray(result, ("SHAPE@X", "SHAPE@Y", "grid_code")).reshape(
         (rowCount, colCount))
+    #arcpy.Delete_management(result)
 
     dtype = np.dtype([('X', '<f4'), ('Y', '<f4'), ('{0}'.format(field), '<f4')])
     surfaceArray = np.zeros(((rowCount - 1) * 2, (colCount - 1)), dtype)
@@ -92,7 +94,9 @@ def RasterToSurface(dem, out_fc, field):
 
 
 def BatchRasterToSurface(gdb):
+    arcpy.env.overwriteOutput = True
     arcpy.env.workspace = gdb
+    arcpy.env.scratchWorkspace = gdb
     RasterToSurface("DEM", "SURFACE", "A20")
 
 
