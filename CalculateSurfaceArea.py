@@ -34,7 +34,7 @@ def CalcSurfaceArea(in_fc, surface, area_field, out_field):
     fieldmappings = arcpy.FieldMappings()
     fieldmappings.addFieldMap(fieldmap)
 
-    result = arcpy.SpatialJoin_analysis(in_fc, surface, "#",
+    result = arcpy.SpatialJoin_analysis(in_fc, surface, "SURFACE2",
                                         field_mapping=fieldmappings, match_option="CONTAINS")
 
     if out_field not in desc.fields:
@@ -51,13 +51,13 @@ def CalcSurfaceArea(in_fc, surface, area_field, out_field):
         cursor1.updateRow(row1)
 
     del cursor1, cursor2
-
+    arcpy.Delete_management(result)
 
 def BatchCalcSurfaceArea(gdb):
     arcpy.env.workspace = gdb
-    fcs = arcpy.ListFeatureClasses(feature_type="polygon")
-    for fc in fcs:
-        CalcSurfaceArea(fc, "SURFACE", "A20", "A20")
+    in_fc = gdb + "\\LCA"
+    surface = gdb + "\\SURFACE"
+    CalcSurfaceArea(in_fc, surface, "A20", "A20")
 
 
 if __name__ == "__main__":

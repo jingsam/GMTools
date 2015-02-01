@@ -13,8 +13,8 @@ from CalculateSurfaceLength import BatchCalcSurfaceLength
 def StartTask(gdb):
     #BatchCalcSphericalArea(gdb)
     #BatchCalcSphericalLength(gdb)
-    BatchRasterToSurface(gdb)
-    #BatchCalcSurfaceArea(gdb)
+    #BatchRasterToSurface(gdb)
+    BatchCalcSurfaceArea(gdb)
     #BatchCalcSurfaceLength(gdb)
 
 
